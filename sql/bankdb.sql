@@ -1,0 +1,17 @@
+CREATE DATABASE bankdb;
+
+\c bankdb;
+
+CREATE TABLE accounts (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    balance DOUBLE PRECISION NOT NULL
+);
+
+CREATE TABLE transactions (
+    id SERIAL PRIMARY KEY,
+    account_id INT REFERENCES accounts(id) ON DELETE CASCADE,
+    type VARCHAR(20) NOT NULL,
+    amount DOUBLE PRECISION NOT NULL,
+    date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
