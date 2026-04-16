@@ -1,75 +1,84 @@
-# Java Swing Banking Application
+# Java Swing Banking Application (V2)
 
-This is a simple beginner-friendly banking application built with:
+This is a beginner-friendly banking desktop app built with:
 
-- Java Swing for the GUI
+- Java Swing for the UI
 - JDBC for database access
-- PostgreSQL as the database
+- PostgreSQL as the backend database
+
+Version 2 adds:
+
+- login and registration
+- menu bar actions
+- user-scoped accounts
+- transaction history sorting (oldest/newest)
 
 ## Project Structure
 
-- `src/DBConnection.java` - handles PostgreSQL connection
-- `src/BankService.java` - contains account and transaction methods
-- `src/TransactionRecord.java` - simple model class for transaction history
-- `src/BankingAppUI.java` - main Swing user interface
-- `sql/bankdb.sql` - SQL script to create the database and tables
-- `scripts/run_migrations.sh` - runs the initial PostgreSQL setup
-- `scripts/run_app.sh` - compiles and starts the app
+- `src/DBConnection.java` - PostgreSQL connection config and factory
+- `src/BankService.java` - business logic + SQL operations
+- `src/TransactionRecord.java` - model for transaction history rows
+- `src/BankingAppUI.java` - Swing app window, menu bar, dialogs, table
+- `sql/bankdb.sql` - full schema setup for users/accounts/transactions
+- `scripts/run_migrations.sh` - runs schema migration
+- `scripts/run_app.sh` - compiles and launches the app
+
+## Database Schema (V2)
+
+The migration now creates:
+
+- `users` - login users (`username`, `password`, `display_name`)
+- `accounts` - bank accounts owned by users (`user_id` foreign key)
+- `transactions` - deposit/withdraw records for accounts
+
+Notes:
+
+- each account belongs to one user
+- deleting a user cascades to their accounts and transactions
+- amount/type constraints and indexes are included for safety/performance
 
 ## Database Setup
 
 1. Make sure PostgreSQL is running locally.
-2. Run the migration script:
+2. Run:
 
 ```bash
 ./scripts/run_migrations.sh
 ```
 
-3. This script creates the database and tables from `sql/bankdb.sql`.
-4. The app connects using:
+3. The script rebuilds `bankdb` from `sql/bankdb.sql`.
+
+Connection used by the app:
 
 ```text
 jdbc:postgresql://localhost:5432/bankdb
-```
-
-5. It uses these credentials:
-
-```text
 Username: postgres
 Password: password
 ```
 
 ## PostgreSQL JDBC Driver
 
-You need the PostgreSQL JDBC driver JAR file before compiling and running.
-
-Example download name:
+Place the PostgreSQL JDBC driver jar in the project root:
 
 ```text
-postgresql-42.7.3.jar
+postgresql-42.7.9.jar
 ```
 
-## Compile And Run With Script
+## Run The App
 
-Use the helper script:
+Using script:
 
 ```bash
 ./scripts/run_app.sh
 ```
 
-This script:
-
-- checks that the PostgreSQL JDBC JAR exists
-- compiles all Java source files
-- starts the Swing banking application
-
-## Manual Compile
+Manual compile:
 
 ```bash
 javac -cp ".:postgresql-42.7.9.jar" src/*.java
 ```
 
-## Manual Run
+Manual run:
 
 ```bash
 java -cp ".:src:postgresql-42.7.9.jar" BankingAppUI
@@ -77,82 +86,62 @@ java -cp ".:src:postgresql-42.7.9.jar" BankingAppUI
 
 ## Features
 
-- Create account
-- Deposit money
-- Withdraw money
-- Check balance
-- View transaction history
+- user registration and login
+- create account
+- deposit money
+- withdraw money
+- check balance
+- view transaction history in table
+- sort history:
+  - newest to oldest
+  - oldest to newest
 
-## How To Use The App
+## How To Use
 
-When the window opens, you will see four text fields:
+### 1) Login / Register
 
-- `Account Holder Name`
-- `Initial Balance`
-- `Account ID`
-- `Amount`
+When the app starts, authentication is required.
 
-Use the fields based on the button you want to click.
+- choose `Login` if you already have an account
+- choose `Register` to create a new user
 
-### 1. Create Account
+You can also use the menu:
 
-1. Enter the customer name in `Account Holder Name`.
-2. Enter the starting balance in `Initial Balance`.
-3. Click `Create Account`.
-4. A message box will show the new account ID.
-5. Save that account ID because you will need it for deposit, withdraw, balance check, and history.
+- `Account -> Login`
+- `Account -> Register`
+- `Account -> Logout`
 
-Example:
+### 2) Create Bank Account
 
-```text
-Name: Ross
-Initial Balance: 5000
-```
+1. Enter `Account Holder Name`
+2. Enter `Initial Balance`
+3. Click `Create Account`
+4. Save the generated `Account ID`
 
-### 2. Deposit Money
+### 3) Deposit / Withdraw
 
-1. Enter the saved account number in `Account ID`.
-2. Enter the deposit amount in `Amount`.
-3. Click `Deposit`.
-4. A success message will appear if the deposit is completed.
+1. Enter `Account ID`
+2. Enter `Amount`
+3. Click `Deposit` or `Withdraw`
 
-Example:
+### 4) Check Balance
 
-```text
-Account ID: 1
-Amount: 1000
-```
+1. Enter `Account ID`
+2. Click `Check Balance`
 
-### 3. Withdraw Money
+### 5) Transaction History + Sorting
 
-1. Enter the account number in `Account ID`.
-2. Enter the withdrawal amount in `Amount`.
-3. Click `Withdraw`.
-4. If the amount is greater than the available balance, the app will show `Insufficient balance`.
+1. Enter `Account ID`
+2. Click `View History`
+3. Use menu options:
+   - `History -> Sort: Newest to Oldest`
+   - `History -> Sort: Oldest to Newest`
+   - `History -> Refresh History`
 
-Example:
+## Important Notes
 
-```text
-Account ID: 1
-Amount: 300
-```
-
-### 4. Check Balance
-
-1. Enter the account number in `Account ID`.
-2. Click `Check Balance`.
-3. A message box will show the current balance.
-
-### 5. View Transaction History
-
-1. Enter the account number in `Account ID`.
-2. Click `View History`.
-3. The table at the bottom of the window will show all deposits and withdrawals for that account.
-
-## Notes For Users
-
-- `Account ID` is generated automatically when a new account is created.
-- `Amount` must be greater than `0`.
-- `Initial Balance` cannot be negative.
-- If an account does not exist, the app will show an error message.
-- Every deposit and withdrawal is stored in the `transactions` table.
+- account operations are scoped to the currently logged-in user
+- `Amount` must be greater than `0`
+- `Initial Balance` cannot be negative
+- deposits/withdrawals are written to `transactions`
+- passwords are currently stored as plain text (okay for learning/demo, not production)

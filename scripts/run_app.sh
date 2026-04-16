@@ -5,9 +5,9 @@ set -e
 JDBC_JAR="postgresql-42.7.9.jar"
 
 if [ ! -f "$JDBC_JAR" ]; then
-    echo "PostgreSQL JDBC driver not found: $JDBC_JAR"
-    echo "Place the JAR file in the project root and try again."
-    exit 1
+  echo "PostgreSQL JDBC driver not found: $JDBC_JAR"
+  echo "Place the JAR file in the project root and try again."
+  exit 1
 fi
 
 echo "Compiling Java files..."
